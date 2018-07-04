@@ -5,7 +5,7 @@ http://mirrors.aliyun.com/docker-toolbox/windows/docker-toolbox/
 2.双击 Docker Quickstart Terminal 图标运行
 
 3.如果以前安装了git需要手动选择git/bin/bash.exe
-在右击→属性→目标中设置如下
+也可：在右击→属性→目标中设置如下
 "C:\Program Files\Git\bin\bash.exe" --login -i "C:\Program Files\Docker Toolbox\start.sh"
 
 4.下载boot2docker.iso插件
