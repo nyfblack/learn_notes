@@ -1,0 +1,17 @@
+win10家庭版安装总结
+1.下载docker toolbox镜像，并安装(一直next)
+http://mirrors.aliyun.com/docker-toolbox/windows/docker-toolbox/
+
+2.双击 Docker Quickstart Terminal 图标运行
+
+3.如果以前安装了git需要手动选择git/bin/bash.exe
+在右击→属性→目标中设置如下
+"C:\Program Files\Git\bin\bash.exe" --login -i "C:\Program Files\Docker Toolbox\start.sh"
+
+4.下载boot2docker.iso插件
+https://github.com/boot2docker/boot2docker/releases/download/v18.05.0-ce/boot2docker.iso
+如果运行报错，需要手动下载boot2docker.iso放到默认路径中，再运行
+
+注：
+cup虚拟化要打开
+任务管理器→性能→cup中查看
