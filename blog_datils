@@ -2,6 +2,7 @@
 
 _config.yml ：全局配置文件
 posts :放文章的文件夹
+其他文件放置页面和样式
 
 _config.yml
 paginate中paginate的6为每页显示6篇文章，port：4001 是jekyll启动端口号
