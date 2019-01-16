@@ -53,10 +53,13 @@ _____
 ***
 # 5.代码块
 ***
-代码区块的建立是在每行加上4个空格或者一个制表符（如同写代码一样）。  
-新语法：使用```语言名```也可以编写代码片段  
-注意⚠️：需要和普通段落之间存在空行
+代码块:在每行加上4个空格或者一个制表符（如同写代码一样）。   
+       代码之间分别用三个反引号包起来，且两边的反引号单独占一行;  
+注意⚠️：需要和普通段落之间存在空行  
+单行代码：代码之间分别用一个反引号包起来；
 
+`create database hero;`  
+   
     public 
 
 ***
@@ -180,16 +183,15 @@ _这是倾斜的文字_
 ***
 # 12.流程图
 ***
-st=>start: Start:>https://www.jpjbp.com/
-io=>inputoutput: verification
-op=>operation: Your Operation
+flow
+st=>start: 开始
+op=>operation: My Operation
 cond=>condition: Yes or No?
-sub=>subroutine: Your Subroutine
 e=>end
-
-st->io->op->cond
+st->op->cond
 cond(yes)->e
-cond(no)->sub->io
+cond(no)->op
+&
 ***
 
 
