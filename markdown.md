@@ -42,6 +42,58 @@ _____
 *斜体* ，_斜体_   
 **加粗**，__粗体__
 ***
+# 7.列表 （有序，无序）
+***
+**注意：标记后面最少有一个_空格_或_制表符_。若不在引用区块中，必须和前方段落之间存在空行。**
+
+-   第一项
++   第二项
+-   第三项
++   第四项
+-   第五项
++   第六项
+***
+# 8.链接
+***
+链接可以由两种形式生成，行内式 和 参考式。  
+
+[GitHub](http://github.com)  
+自动生成连接  <http://www.github.com/>
+***
+# 9.图片
+*** 
+添加图片形式和链接相似，只需要在链接的基础上前方加一个 ！号。  
+`格式: ![Alt Text](url)`  
+![GitHub set up](http://zh.mweb.im/asset/img/set-up-git.gif)
+***
+# 10.特殊符号的使用
+***
+`不转义特殊符号（原样输出）`    
+'Ctrl+A'
+***
+# 11.表格
+***
+第一格表头 | 第二格表头
+---------| -------------
+内容单元格 第一列第一格 | 内容单元格第二列第一格
+内容单元格 第一列第二格 多加文字 | 内容单元格第二列第二格
+内容单元格 第一列第三格 多加文字 | 内容单元格第二列第三格
+内容单元格 第一列第四格 多加文字 | 内容单元格第二列第四格
+***
+# 12.流程图
+***
+st=>start: Start:>https://www.jpjbp.com/
+io=>inputoutput: verification
+op=>operation: Your Operation
+cond=>condition: Yes or No?
+sub=>subroutine: Your Subroutine
+e=>end
+
+st->io->op->cond
+cond(yes)->e
+cond(no)->sub->io
+***
+
 
 
 
