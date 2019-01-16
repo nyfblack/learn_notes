@@ -1,5 +1,5 @@
 # 1.search
-- ctrl+o：
+- ctrl+o：打开可以重写的方法列表；
 - ctrl+n：
 - ctrl+r：
 
