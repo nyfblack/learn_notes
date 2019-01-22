@@ -1,11 +1,11 @@
-# 1.yaml
+1.OpenApi-yaml
 
-​	Yaml文件是统一定义接口的文件，其中主要包含模型定义(Definitions Object)和接口定义(Paths Object)，模型定义指出了微服务中使用的数据对象(POJO)，接口定义指出了微服务对外调用接口。该文件采用Swagger规范，并在该规范基础上做了很小的修改。
+openApi可以使用yaml和json两种实现；
 
 ## 1.1 yaml文件结构
 
 ```yaml
-# 协议的版本
+# OpenAPI规范版本，目前只能填2.0
 swagger: '2.0' 
 # 服务基本信息定义,包括服务名称，版本，服务描述，服务Owner
 info:
@@ -22,8 +22,10 @@ info:
 # 服务支持的访问协议http(s), 当前CloudSOP都是https的
 schemes:
   - https 
-# Base PATH, 完整的访问路径为 basePath + relativePath，relativePath
-  在paths定义
+# Base PATH, 完整的访问路径为 basePath + relativePath
+# 在paths定义:访问的项目根目录就是:
+# https://uri/rest+relativePath
+host: uri
 basePath: /rest
 # 定义对外调用的接口
 paths:
@@ -74,7 +76,7 @@ relativePath路径
       parameters: #接口输入参数定义
         #参数1 
         - name: bookName  #名称
-          #参数类型，常用的类型有body,path,query等类型，指明了调用接口是该
+          #参数类型，常用的类型有body,path,query(?传参)等类型，指明了调用接口是该
           #参数值传递格式，其中path,query用于基本类型，可用于get、post、
           #delete、put方法，body用于非基本类型，只能用于post、delete、put方法
           in: query  
@@ -123,6 +125,10 @@ relativePath路径
 
  ### 1.2.2Yaml可使用的数据的类型
 
+- 基本类型
+
+基本类型可用于指定输入和输出参数，其中type和format是文件中使用的关键字。
+
 | CommonName | type    | format    |
 | ---------- | ------- | --------- |
 | Integer    | integer | int32     |
@@ -137,8 +143,6 @@ relativePath路径
 | date time  | string  | date-time |
 | password   | string  | password  |
 
-​	基本类型可用于指定输入和输出参数，其中type和format是文件中使用的关键字。可以参数定义是双层结构，某些同一名称的type下可能会有多个format，因此使用这些type值时需要追加format具体指明参数类型；对于具有明确无歧义的type，则不要format关键字，如boolean和string，string比较特殊，string下是存在多个format类型，但如果使用默认的字符串类型，此时format为空，不需要指定format。
-
 ```YAML
 # 相当于定义int
 type: integer #指明大的类型
@@ -150,13 +154,11 @@ type: array
     type: string  
 ```
 
-如果输入和输出参数不是上述的基本类型，那在定义输入和输出参数类型是采用如下方式：
-
 - 参数是单对象类型，type和format被置换如下语句：
 
 ```yaml
  schema: # 声明返回值Schema
- $ref: '#/definitions/Book'
+   $ref: '#/definitions/Book'
  # 相当于定义Book类型参量，该部分只能是由definites中定义的类型。
 ```
 
@@ -172,7 +174,7 @@ schema: # 声明返回值Schema
 
  ## 1.3 definitions定义 
 
-​      definitions下定义的对象的结构如下，定义的对象在yaml文件编译后会转换成java数据类
+​      definitions下定义的对象的结构如下，定义的对象在yaml文件编译后会转换成model类
 
 ```
 对象名称:
@@ -206,7 +208,7 @@ definitions:
       createTime:
         type: integer
         format: int64
-      instance: #表示instance是非基本类型，类型是PipelineInstancePOJO
+      instance: #声明instance是非基本类型，类型是PipelineInstancePOJO
         $ref: '#/definitions/PipelineInstancePOJO'
       stages: #声明stages是List< PipelineStagePOJO>类型
         type: array
@@ -303,7 +305,7 @@ values:
 # private PipelineStagePOJO values;
 ```
 
-6)      对象可以继承
+6)      对象可以继承（？有问题需要验证）
 
 ```yaml
 Response:
@@ -355,6 +357,204 @@ public class ResponseString extends Response {
     public void setEntity(String entity){this.entity = entity;}
 }
 ```
+
+## 1.4 responses
+
+相应的简化：
+
+```yaml
+# 定义
+definitions:
+  Error:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+responses:
+  Standard500ErrorResponse:
+    description: An unexpected error occured.
+    schema:
+      $ref: "#/definitions/Error"
+      
+# 使用
+      responses:
+        200:
+          description: A list of Person
+          schema:
+            $ref: "#/definitions/Persons"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"  # 直接引用定义好的response
+```
+
+## 1.5 parameters
+
+参数定义的简化
+
+```yaml
+# 定义
+parameters:
+  username:
+    name: username
+    in: path
+    required: true
+    description: The person's username
+    type: string
+  pageSize:
+    name: pageSize
+    in: query
+    description: Number of persons returned
+    type: integer
+  pageNumber:
+    name: pageNumber
+    in: query
+    description: Page number
+    type: integer
+# 使用
+      parameters:
+       - $ref: "#/parameters/pageSize"
+       - $ref: "#/parameters/pageNumber"
+```
+
+## 1.6 路径参数
+
+```yaml
+#START############################################################################
+# 路径参数直接定义到路径下，此路径下的所有方法都可以共用
+  /persons/{username}:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        description: The person's username
+        type: string
+# END ############################################################################
+    get:
+      summary: Gets a person
+      description: Returns a single person for its username.
+      responses:
+        200:
+          description: A Person
+          schema:
+            $ref: "#/definitions/Person"
+        404:
+          $ref: "#/responses/PersonDoesNotExistResponse"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+    delete:
+      summary: Deletes a person
+      description: Delete a single person identified via its username
+      responses:
+        204:
+          description: Person successfully deleted.
+        404:
+          $ref: "#/responses/PersonDoesNotExistResponse"
+        500:
+          $ref: "#/responses/Standard500ErrorResponse"
+```
+
+## 1.7 为数据定义约束
+
+- String类型；
+
+| 属性      | 类型   | 描述             |
+| --------- | ------ | ---------------- |
+| minLength | number | 字符串的最小长度 |
+| maxLength | number | 字符串的最大长度 |
+| pattern   | String | 正则表达式       |
+
+```yaml
+username:
+  type: string
+  pattern: "[a-z0-9]{8,64}"
+  minLength: 8
+  maxLength: 64
+```
+
+- 日期和时间：
+
+| 格式     | 属性包含内容                                                 | 属性示例             |
+| -------- | ------------------------------------------------------------ | -------------------- |
+| date     | [ISO8601 full-date](http://xml2rfc.ietf.org/public/rfc/html/rfc3339.html#anchor14) | 2016-04-01           |
+| dateTime | [ ISO8601 date-time](http://xml2rfc.ietf.org/public/rfc/html/rfc3339.html#anchor14) | 2016-04-16T16:06:05Z |
+
+```yaml
+dateOfBirth:
+  type: string
+  format: date
+lastTimeOnline:
+  type: string
+  format: dateTime
+```
+
+- 数字：
+
+| 属性             | 类型    | 描述                         |
+| ---------------- | ------- | ---------------------------- |
+| minimum          | number  | 最小值                       |
+| maximum          | number  | 最大值                       |
+| exclusiveMinimum | boolean | 数值必须 > 最小值            |
+| exclusiveMaximum | boolean | 数值必须 < 最大值            |
+| multipleOf       | number  | 数值必须是multipleOf的整数倍 |
+
+- 枚举：
+
+```yaml
+# code 的值只能从三个枚举值中选择
+code:
+  type: string
+  enum:
+    - DBERR
+    - NTERR
+    - UNERR
+```
+
+- 数值的大小和唯一性：
+
+| 属性        | 类型    | 描述                     |
+| ----------- | ------- | ------------------------ |
+| minItems    | number  | 数值中的最小元素个数     |
+| maxItem     | number  | 数值中的最大元素个数     |
+| uniqueItems | boolean | 标示数组中的元素是否唯一 |
+
+```yaml
+#定义一个用户数组 Persons，希望返回的用户信息条数介于10~100之间，而且不能有重复的用户信息： 
+ Persons:
+    properties:
+      items:
+        type: array
+        minItems: 10
+        maxItems: 100
+        uniqueItems: true
+        items:
+          $ref: "#/definitions/Person"
+```
+
+## 1.8 一些特殊关键字
+
+- readOnly：
+
+```yaml
+# 上次在线时间（lastTimeOnline ）是 Person 的一个属性，获取用户信息时需要这个属性。但在创建用户时，不能把这个属性 post 到服务器。就使用readOnly关键字
+lastTimeOnline:
+  type: string
+  format: dateTime
+  readOnly: true
+```
+
+- allOf 
+
+```yaml
+#PagedPersons 根节点下，具有将 Persons 和 Paging ==展开== 后的全部属性。
+  PagedPersons:
+    allOf:
+      - $ref: "#/definitions/Persons"
+      - $ref: "#/definitions/Paging"  
+```
+
+
+
+
 
 
 
@@ -446,11 +646,7 @@ public class PromotionResourceApi {
 }
 ```
 
-
-
-
-
-## 2.1 Api Swagger-ui
+## 2.1 springBoot-Api
 
 1. 创建一个springBoot项目；
 
@@ -586,85 +782,7 @@ public class UserController {
 
 
 
-## 2.2 java->yaml
-
-pom.xml
-
-```xml
-<dependencies>
-    <!--swagger 的依赖-->
-    <dependency>
-        <groupId>io.swagger</groupId>
-        <artifactId>swagger-jersey2-jaxrs</artifactId>
-        <version>1.5.10</version>
-    </dependency>
-    <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>1.1.7</version>
-    </dependency>
-    <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.12</version>
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        <version>3.1.0</version>
-    </dependency>
-    <dependency>
-        <groupId>org.hibernate</groupId>
-        <artifactId>hibernate-validator</artifactId>
-        <version>5.2.4.Final</version>
-    </dependency>
-</dependencies>
-```
-
-web.xml
-
-```xml
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee  http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
-
-  <servlet>
-    <servlet-name>jersey</servlet-name>
-    <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-    <init-param>
-      <param-name>jersey.config.server.provider.packages</param-name>
-      <param-value>
-        io.swagger.jaxrs.listing,
-        com.demo.swagger.jaxrs
-      </param-value>
-    </init-param>
-    <init-param>
-      <param-name>jersey.config.server.wadl.disableWadl</param-name>
-      <param-value>true</param-value>
-    </init-param>
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>jersey</servlet-name>
-    <url-pattern>/api/*</url-pattern>
-  </servlet-mapping>
-
-  <filter>
-    <filter-name>ApiOriginFilter</filter-name>
-    <filter-class>com.demo.swagger.jaxrs.util.ApiOriginFilter</filter-class>
-  </filter>
-  <filter-mapping>
-    <filter-name>ApiOriginFilter</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
-</web-app>
-```
-
-
-
-## 2.3 yaml->java
+## 2.2 yaml->java
 
 1. 下载jar包
 
@@ -689,50 +807,163 @@ web.xml
    -i http://petstore.swagger.io/v2/swagger.json 
    -l java 
    -o samples/client/pestore/java
- 
- #-i指定swagger描述文件的路径,url地址或路径文件;
- #该参数为必须(http://petstore.swagger.io/v2/swagger.json是官方的一个例子，我们可以改成自己的服务)
- #-l指定生成客户端代码的语言,该参数为必须
- #-o指定生成文件的位置(默认当前目录)
- 
- #springBoot的使用
- java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
-  -i http://petstore.swagger.io/v2/swagger.json \
-  -l spring \
-  -o samples/server/petstore/springboot
-  #也可以添加json格式的配置文件
-  #{"basePackage":"io.swagger","configPackage":"io.swagger.config"}
-  #使用命令 -c myOptions.json 指出；
-  #To Use-it : in the generated folder try mvn package for build jar.
-  #Start your server java -jar target/swagger-springboot-server-1.0.0.jar
-  #SpringBoot listening on default port 8080
+   
+   #-i指定swagger描述文件的路径,url地址或路径文件; 
+   #该参数为必须(http://petstore.swagger.io/v2/swagger.json是官方的一个例子，我们可以改成自己的服务) #-l指定生成客户端代码的语言,该参数为必须 
+   #-o指定生成文件的位置(默认当前目录)
+   
+   #springBoot的使用 java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate 
+   -i http://petstore.swagger.io/v2/swagger.json 
+   -l spring 
+   -o samples/server/petstore/springboot 
+   #也可以添加json格式的配置文件 
+   #{"basePackage":"io.swagger","configPackage":"io.swagger.config"} 
+   #使用命令 -c myOptions.json 指出； 
+   #To Use-it : in the generated folder try mvn package for build jar. 
+   #Start your server java -jar target/swagger-springboot-server-1.0.0.jar 
+   #SpringBoot listening on default port 8080
    ```
 
+
+   ```
    除了可以指定上面三个参数，还有一些常用的：
-
    -c json格式的配置文件的路径;文件为json格式,支持的配置项因语言的不同而不同
-
    -a 当获取远程swagger定义时,添加授权头信息;URL-encoded格式化的name,逗号隔开的多个值
-
    --api-package 指定生成的api类的包名
-
    --artifact-id 指定pom.xml的artifactId的值
-
    --artifact-version 指定pom.xml的artifact的版本
-
    --group-id 指定pom.xml的groupId的值
-
    --model-package 指定生成的model类的包名
-
    -s 指定该参数表示不覆盖已经存在的文件
-
    -t 指定模版文件所在目录
+   ```
 
 
 
 
 
 
+
+## 2.3 java->yaml
+
+
+
+## 2.4 swagger editor
+
+[在线版swagger-editor](http://editor.swagger.io/#/ )
+
+1. 安装
+
+- Node.js 安装
+
+  swagger 是用node写的，所以需要先安装node。安装nodejs后node和npm会一并安装。windows中直接运行node-v8.1.2-x64.msi即可完成安装。
+
+- node中http-server安装
+
+```shell
+#任一cmd窗口，执行
+npm install -g http-server
+```
+
+- 下载swagger-editor
+
+  从github 下载安装（有时下载会有点慢）
+
+  从官网下载swagger-editor.zip，解压即可。
+
+
+
+2. 启动Swagger Editor
+
+   在swagger-editor的根目录打开cmd窗口 -> 执行http-server
+
+   默认为8080端口 ，若想更换端口则使用如下命令 http-server –p 80 或者修改：C:\Users\Administrator\AppData\Roaming\npm\node_modules\http-server\bin\http-server 中 84行 portfinder.basePort = 8080; 改为自己想要的端口。 
+
+   **访问**：http://localhost:8080 
+
+   **说明**：
+
+   界面左边是api 文件的 yaml 描述文件， 左边部分可以直接编辑API文档，编辑会立即更新到右边视图。
+
+   右边是swagger-UI，可以查看文档，并直接进行API的测试。 
+
+
+
+3. 使用
+
+- 示例
+
+  swagger 内置了很多个examples。通过File→Open Example… 打开各示例文档： 
+
+- 设置
+
+  通过 Preference可以进行各种偏好设置 
+
+- 编写api文档
+
+  我们可以参照swagger-editor的示例，直接修改，然后生成自己的文档。
+
+  **几个关键地方需要修改**：
+
+  host 改为本地ip:port
+
+  basePath 改为项目名或模块名
+
+  swagger-editor 有自动纠错的功能，编写的API 文档应该保证没有错误。这样才能发布。
+
+  编写完毕后， 我们可以把它保存下来。 可选格式为yaml/json ：
+
+  当然，我们也可以把写好的yaml/json 文档导入然后修改、测试。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 附录：资料
+
+1. [swagger学习资料](https://blog.csdn.net/lucky373125/article/details/80471525)
 
 
 
