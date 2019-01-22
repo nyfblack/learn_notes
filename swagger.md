@@ -691,7 +691,7 @@ web.xml
    -o samples/client/pestore/java
  
  #-i指定swagger描述文件的路径,url地址或路径文件;
- #  该参数为必须(http://petstore.swagger.io/v2/swagger.json是官方的一个例子，我们可以改成自己的服务)
+ #该参数为必须(http://petstore.swagger.io/v2/swagger.json是官方的一个例子，我们可以改成自己的服务)
  #-l指定生成客户端代码的语言,该参数为必须
  #-o指定生成文件的位置(默认当前目录)
  
