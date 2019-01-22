@@ -1,3 +1,11 @@
+---
+authou:    nyfblack
+day:    2019.01.16
+title:    markdown 
+---
+<!-- MarkdownTOP -->
+
+<!-- /MarkdownTOP -->
 # 1.分割线
 ```
 最常使用就是三个或以上的 *  - 和 _
