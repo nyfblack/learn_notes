@@ -13,7 +13,7 @@
 
 
 # 3.创建一个web工程（使用maven）
-- 创建一个项目：File->New Project->maven , 不选择模板->根据流程创建项目；
+- 创建一个项目：File->New Project->maven , 不选择模板->根据流程创建项目完成，然后进行如下配置；
 - 打开 Project Structure（快捷键 Ctrl+Alt+Shift+S），Project不需要配置，编译目录保持默认即可；
 - Moudles：无适配服务组件，需要添加。添加web；
 - 提示 Web module没有包含artifact，根据提示创建；
