@@ -1,10 +1,11 @@
-spring-annotation
-spring-boot
-logback
-swagger
-zookeeper
-kafka
-elasticsearch(ElasticSearch+Logstash+Kibana)
-redis
-linux-shell
-docker
+- spring-annotation
+- spring-boot
+- spring data
+- logback
+- swagger
+- zookeeper
+- kafka
+- elasticsearch(ElasticSearch+Logstash+Kibana)
+- redis
+- linux-shell
+- docker
