@@ -1,6 +1,6 @@
 # 1.search
 - ctrl+o：打开可以重写的方法列表，重写父类的方法；
-- ctrl+n：
+- ctrl+n：全局搜索类文件
 - ctrl+r：
 - ctrl+h：打开继承树；
 
