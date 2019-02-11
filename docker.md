@@ -23,7 +23,8 @@
 	任务管理器→性能→cup中查看
 
 ## 1.rest方式启动
-	目前默认安装的docker是以daemon形式对外提供CLI方式访问，因此只支持docker与Service Broker合设的场景。若要docker提供Rest访问方式，或者需要实现docker与Service Broker的分设，则需要将docker改为Rest方式启动。 
+
+目前默认安装的docker是以daemon形式对外提供CLI方式访问，因此只支持docker与Service Broker合设的场景。若要docker提供Rest访问方式，或者需要实现docker与Service Broker的分设，则需要将docker改为Rest方式启动。 
 
 ```shell
 $ service docker stop 
