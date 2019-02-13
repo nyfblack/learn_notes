@@ -10,6 +10,7 @@
 - alt+enter：智能提示；
 - ctrl+F9：开发过程中，修改html页面后，刷新页面，重新编译；
 - shift+F6：重命名
+- ctrl+alt+v：自动生成返回值
 
 
 
