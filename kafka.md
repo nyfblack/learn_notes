@@ -49,6 +49,32 @@ Kafka目前主要作为一个分布式的发布订阅式的消息系统使用
 - 在kafka的设计中，可以有多个不同的group来同时消费同一个topic下的消息，他们的的消费的记录位置offset各不相同，不互相干扰。
 - 对于一个group而言，消费者的数量不应该多于分区的数量，因为在一个group中，每个分区至多只能绑定到一个消费者上，即一个消费者可以消费多个分区，一个分区只能给一个消费者消费；因此，若一个group中的消费者数量大于分区数量的话，多余的消费者将不会收到任何消息。 
 
+## 4.kafka和Flume的比较
+
+kafka与Flume都为流式数据采集框架；
+
+- flume：
+
+  适合多个生产者；
+
+  适合下游数据消费者不多的情况；
+
+  适合数据安全性要求不高的操作；
+
+  适合与Hadoop生态圈对接的操作；
+
+- kafka：
+
+  适合数据下游消费众多的情况；
+
+  适合数据安全性要求较高的操作，支持replication；
+
+
+
+**常用的一种模型是：**
+
+线上数据-->flume-->kafka-->flume(根据情景增删该流程)-->HDFS
+
 
 
 # 2.kafka命令行操作
@@ -325,21 +351,105 @@ public static void main(String[] args){
    - 从主副本拉取分区消息
    - 识别主副本的变化，重试
 
-2. 方法描述
-
-   findLeader()	:  客户端向种子节点发送主题元数据，将副本集加入备用节点
-
-   getLastOffset()   :   消费者客户端发送偏移量请求，获取分区最近的偏移量
-
-   run()   :  消费者低级api拉取消息的主要方法
-
-   findNewLeader()   :  当分区的主副本节点发生故障，客户将要找出新的主副本
 
 
 
 
 
 
+
+
+
+
+
+## 4.扩展
+
+### 1.重复消费数据
+
+再次消费已经消费过的消息的方式：
+
+1. 使用低级API，直接指定offset；
+2. 使用高级API，重新创建一个消费者组，从头消费；
+
+```java
+//在消费者consumer中：
+//方法一：添加配置，重新创建新的组；
+//默认配置为latest，从最后的offset消费，重新创建组后也不会重新消费，需要添加配置，从最早的offset读取；
+props.put("auto.offset.reset","earliest");
+/**为什么要设置为earliest而不是0？
+ * 由于kafka有设置数据保存天数或大小的限制，所以如果长时间使用的kafka的offset的最小值可能不是0；
+ * 前边的数据有可能已经删除了；所以指定的时候，earliest代表kafka中存在的最小的offset而不是0；*/
+
+//方法二：添加topic的时候；重移动offset
+consumer.assign(Collections.singletonList(new TopicPartition("test",0)));
+consumer.seek(new TopicPartition("test",0),2);//第二个参数为指定的offset
+//这种方式只能重置offset，重复消费，不能把offset拿出来；
+```
+
+### 2.读取kafka中存储的offset
+
+​	读取kafka中存储offset的topic ( __consumer_offsets ) 的值；
+
+1. 创建一个console consumer group；
+
+```shell
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --topic test --from-beginning --new-consumer
+```
+
+2. 获取consume group的group id
+
+```shell
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --list --new-consumer
+#输出：console-consumer-46965
+```
+
+3. 查看__consumer_offsets topic中的所有内容
+
+```properties
+#在consumer.properties中添加设置：
+exclude.internal.topics=false
+```
+
+---
+
+```shell
+#0.11.0.0之前版本
+bin/kafka-console-consumer.sh --topic __consumer_offsets --zookeeper localhost:2181 --formatter "kafka.coordinator.GroupMetadataManager\$OffsetsMessageFormatter" --consumer.config config/consumer.properties --from-beginning
+#0.11.0.0之后版本(含)
+bin/kafka-console-consumer.sh --topic __consumer_offsets --zookeeper localhost:2181 --formatter "kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter" --consumer.config config/consumer.properties --from-beginning
+```
+
+默认情况下__consumer_offsets有50个分区，如果你的系统中consumer group也很多的话，那么这个命令的输出结果会很多。 
+
+4. 计算指定的consumer group在__consumer_offsets中的分区信息
+
+这时候就用group.id(本例中是console-consumer-46965)。Kafka会使用下面公式计算该group位移保存在__consumer_offsets的哪个分区上： 
+
+```shell
+Math.abs(groupID.hashCode()) % numPartitions
+#本例中对应的分区=Math.abs("console-consumer-46965".hashCode()) % 50 = 11;
+#即__consumer_offsets的分区11保存了这个consumer group的位移信息
+```
+
+5. 获取指定consumer group的位移信息
+
+```shell
+#0.11.0.0之前版本
+bin/kafka-simple-consumer-shell.sh --topic __consumer_offsets --partition 11 --broker-list localhost:9092,localhost:9093,localhost:9094 --formatter "kafka.coordinator.GroupMetadataManager\$OffsetsMessageFormatter"
+#0.11.0.0之后版本(含)
+bin/kafka-simple-consumer-shell.sh --topic __consumer_offsets --partition 11 --broker-list localhost:9092,localhost:9093,localhost:9094 --formatter "kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter"
+```
+
+```shell
+#输出结果
+  ...
+[console-consumer-46965,test,1]::[OffsetMetadata[21,NO_METADATA],CommitTime 1479092284436,ExpirationTime 1479178684436]
+[console-consumer-46965,test,0]::[OffsetMetadata[22,NO_METADATA],CommitTime 1479092284436,ExpirationTime 1479178684436]
+[console-consumer-46965,test,2]::[OffsetMetadata[21,NO_METADATA],CommitTime 1479092284436,ExpirationTime 1479178684436]
+ ...
+```
+
+注：从打印出来的结果可以看出，[consumer group,topic,partition]这三个坐标可以唯一确定一个offset，说明了，一个消费者组中的消费者，不能同时消费同一个topic中的消息；
 
 
 
@@ -492,11 +602,23 @@ public SimpleConsumerListener simpleConsumerListener(){
 
 
 
+# 5.kafka的拦截器
+
+kafka可以使用拦截器，对发送给kafka的数据进行校验等操作，可以在拦截器中实现（拦截器链）；
+
+1. 编写拦截器类；实现拦截器的接口：ProducerIntercator<K,V>; 拦截器是生产者发送给kafka消息之前执行的；
+
+2. 在配置信息中添加拦截器类的全类名；
+
+   配置信息中配置时添加的拦截器的顺序就是拦截器执行的顺序；
 
 
 
+# 6.kafka stream
 
+kafka自己的流式处理框架；由于太轻量，功能少，几乎不用；
 
+https://www.cnblogs.com/cssdongl/p/6197301.html
 
 
 
