@@ -359,7 +359,19 @@ sso采用客户端/服务端架构，sso-client与sso-server要实现的功能�
    ```
 
    
+4. 修改配置文件application.properties
 
+   ```properties
+   #注释掉如下三项
+   #server.ssl.key-store=file:/etc/cas/thekeystore
+   #server.ssl.key-store-password=changeit
+   #server.ssl.key-password=changeit
+   #添加如下两项配置
+   cas.tgc.secure=false
+   cas.serviceRegistry.initFromJson=true
+   ```
+
+  
 
 
 
