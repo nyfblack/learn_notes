@@ -359,6 +359,29 @@ sso采用客户端/服务端架构，sso-client与sso-server要实现的功能�
    ```
 
    
+# 4.启动问题及处理
+
+## 1.直接运行 build.cmd run命令报错
+
+```shell
+＞ build.cmd run
+#报错：
+Caused by: java.io.FileNotFoundException: \etc\cas\thekeystore(系统找不到指定文件)
+```
+
+解决办法如下：
+
+1. 在根目录下创建如下目录cas-overlay-template-5.3_dir\src\main\resources；
+
+2. 复制cas-overlay-template-5.3_dir\target\cas\WEB-INF\classes\services文件夹和application.properties配置文件到1创建的目录中；
+
+3. 修改services\HTTPSandIMAPS-10000001.json配置文件：
+
+   ```json
+   //添加http支持
+   "serviceId" : "^(https|http|imaps)://.*",
+   ```
+
 4. 修改配置文件application.properties
 
    ```properties
