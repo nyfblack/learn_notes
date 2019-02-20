@@ -371,6 +371,7 @@ sso采用客户端/服务端架构，sso-client与sso-server要实现的功能�
 - [使用配置资料](https://blog.csdn.net/u011872945/article/details/81047025)
 - [CAS5.3.2单点登录](https://blog.csdn.net/qq_34021712/column/info/26952)
 - [SpringBoot集成CAS5.3](https://blog.csdn.net/lhc0512/article/details/82466246)
+- [cas5.2.x单点登录github](https://github.com/Sunhg2017/CAS_SSO_Record)
 
 
 
