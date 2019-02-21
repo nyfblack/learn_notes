@@ -104,7 +104,98 @@ Hadoop1.x和Hadoop2.x的区别
 
 # 3.Hadoop运行环境的搭建
 
+## 1.虚拟机环境准备
 
+1. 克隆虚拟机
+2. 修改克隆虚拟机的静态IP
+3. 修改主机名
+4. 关闭防火墙
+
+```shell
+vim /etc/udev/rules.d/70-persistent-net.rules
+vim /etc/sysconfig/network-scripts/ifcfg-eth0
+vim /etc/sysconfig/network
+vim /etc/hosts
+#修改完成后重启
+ifconfig  #查看修改是否生效
+ping out_ip  #ping一下外边的ip看能不能ping通
+#在外边ping一下里边的ip看能不能ping通
+```
+
+5. 创建hadoop用户
+6. 配置hadoop用户具有root权限
+
+```shell
+vim /etc/sudoers
+######################配置权限#########################
+root	ALL=(ALL)	ALL
+hadoop	ALL=(ALL)	ALL
+```
+
+5. 在 /opt 下创建文件夹
+
+```shell
+sudo mkdir module
+sudo mkdir software
+chown hadoop:hadoop module software #修改文件的所有者和所在组
+```
+
+
+
+## 2.安装JDK
+
+1. 上传jdk到software文件中
+
+2. 解压jdk到module目录中
+
+   ```shell
+   tar -zxvf /opt/software/jdk.tar.gz -C /opt/module
+   ```
+
+3. 复制jdk的路径，配置环境变量
+
+   ```shell
+   sudo vim /etc/profile
+   ################在文件末尾添加#############################
+   ##JAVA_HOME
+   export JAVA_HOME=/opt/module/jdk
+   export PATH=$PATH:$JAVA_HOME/bin
+   #########################################################
+   #配置好环境变量后，运行如下命令,使配置生效
+   source /etc/profile
+   ```
+
+   
+
+## 3.安装Hadoop
+
+1. 上传安装包并解压
+
+   ```shell
+   tar -zxvf /opt/software/hadoop.tar.gz -C /opt/module
+   ```
+
+2. 配置环境变量
+
+   ```shell
+   sudo vim /etc/profile
+   ################在文件末尾添加#############################
+   ##HADOOP_HOME
+   export HADOOP_HOME=/opt/module/hadoop
+   export PATH=$PATH:$HADOOP_HOME/bin
+   export PATH=$PATH:$HADOOP_HOME/sbin
+   #########################################################
+   #配置好环境变量后，运行如下命令,使配置生效
+   source /etc/profile
+   ```
+
+
+
+## 4.Hadoop目录结构
+
+
+
+# 4.Hadoop运行模式
 
 
 
