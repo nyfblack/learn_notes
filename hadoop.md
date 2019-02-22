@@ -197,6 +197,46 @@ chown hadoop:hadoop module software #修改文件的所有者和所在组
 
 # 4.Hadoop运行模式
 
+## 1.本地运行模式
+
+1. 官方Grep案例
+
+```shell
+#在hadoop安装目录中运行
+$ mkdir input
+$ cp etc/hadoop/*.xml input
+$ bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.2.jar grep input output 'dfs[a-z.]+'
+$ cat output/*
+```
+
+2. 官方WordCount案例
+
+   **所有的统计汇总需求都是这个模式的**
+
+```shell
+#在hadoop安装目录中运行；该案例统计输入文件wc.input中某单词出现的次数
+$ mkdir wcinput
+$ cd wcinput
+$ touch wc.input
+$ vi wc.input
+###########################################
+...#写一些单词
+###########################################
+$ bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.2.jar wordcount wcinput wcoutput
+$ cat wcoutput/*
+```
+
+
+
+## 2.伪分布式模式
+
+
+
+
+
+## 3.完全分布式模式
+
+
 
 
 
