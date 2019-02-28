@@ -144,3 +144,13 @@ public class ExternalizableTest implements Externalizable {
 //输出：是的，我将会被序列化，不管我是否被transient关键字修饰
 ```
 
+
+# 2.单线程池
+
+```java
+ExecutorService executorService = Executors.newSingleThreadExecutor();
+executorService.execute(() -> { });
+```
+
+
+
